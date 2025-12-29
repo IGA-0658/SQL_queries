@@ -1,0 +1,91 @@
+>>>Ejercicios
+3.1. Obtén todas las combinaciones posibles de trabajadores con las tiendas que tenemos.
+
+SELECT "first_name" AS "nombre",
+		"last_name" AS "apellido",
+		"st"."store_id" AS "id_tienda"
+FROM "staff" AS "s"
+CROSS JOIN "store" AS "st"
+
+ (--> "st". le indico la columna donde cogerlo)
+El de arriba no tenia sentido
+
+SELECT CONCAT("s"."first_name", ' ' , "s"."last_name") AS "Empleado",
+		"st"."store_id" 
+FROM "staff" AS "s"
+INNER JOIN "store" AS "st"
+ON "s"."staff_id" = "st"."manager_staff_id"
+
+
+3.2. Encuentra la cantidad total de películas alquiladas por cada cliente y muestra el ID del cliente, su nombre y apellido junto con la cantidad de películas alquiladas.
+
+SELECT "c"."customer_id" AS "id_cliente",
+		CONCAT("first_name", ' ' , "last_name") AS "nombre_cliente",
+		COUNT("r"."inventory_id") AS "cantidad_alq"
+FROM "customer" AS "c"
+LEFT JOIN "rental" AS "r"
+ON "c"."customer_id" = "r"."customer_id"
+GROUP BY "c"."customer_id"
+ORDER BY "cantidad_alq" ASC
+
+3.3. Obtener todas las películas y, si están disponibles en el inventario, mostrar la cantidad disponible.
+
+
+3.4. Obtener los actores y el número de películas en las que ha actuado.
+
+
+3.5. Obtener todas las películas y mostrar los actores que han actuado en ellas, incluso si algunas películas no tienen actores asociados.
+
+
+3.6. Obtener todos los actores y mostrar las películas en las que han actuado, incluso si algunos actores no han actuado en ninguna película.
+(meny to meny)
+
+SELECT CONCAT("a"."first_name", ' ' , "a"."last_name") AS "Nombre_actor",
+		"f"."title" AS "titulo_pelicula"
+FROM "film" AS "f"
+INNER JOIN "film_actor" AS "fa"
+ON "f"."film_id" = "fa"."film_id"
+LEFT JOIN "actor" AS "a"
+ON "a"."actor_id" = "fa"."actor_id"
+
+(comienza a pensarlo con from y a lo ultimo le pone el select)
+(order o count para ver cual titulo de peli esta vacia)
+
+3.7. Obtener todas las películas que tenemos y todos los registros de alquiler.
+
+SELECT "f"."title" AS "titulo",
+		"r"."rental_date" AS "fecha_Alq"
+FROM "film" AS "f"
+INNER JOIN "inventory" AS "i"
+ON "f"."film_id" = "i"."film_id"
+FULL JOIN "rental" AS "r"
+ON "i"."inventory_id" = "r"."inventory_id"
+ORDER BY "titulo"
+
+3.8. Encuentra el título de las películas que son comedias y tienen una duración mayor a 180 minutos en la tabla film.
+
+SELECT "f"."title" AS "titulo",
+		"name" AS "categoria"
+FROM "category" AS "c"
+INNER JOIN "film_category" AS "fc"
+ON "c"."category_id" = "fc"."category_id"
+INNER JOIN "film" AS "f"
+ON "fc"."film_id" = "f"."film_id"
+WHERE "length" > 120 
+	AND "name" = 'Animation'
+
+3.9. Encuentra las categorías de películas que tienen un promedio de duración superior a 110 minutos y muestra el nombre de la categoría junto con el promedio de duración. 
+
+SELECT "c"."name" AS "categoria",
+		ROUND(AVG("f"."length"),2) AS "media_duracion"
+FROM "category" AS "c"
+INNER JOIN "film_category" AS "fc"
+ON "c"."category_id" = "fc"."category_id" 
+/*category_id de la 
+tabla c cojo.. que coincida con tabla fc.. */
+INNER JOIN "film" AS "f"
+ON "fc"."film_id" = "f"."film_id"
+GROUP BY "c"."name"
+HAVING AVG("f"."length") > 110
+
+3.10. Obtén los 5 clientes que más dinero se hayan gastado con nosotros.

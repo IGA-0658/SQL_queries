@@ -1,0 +1,121 @@
+
+1.2. Propósito del reto.
+En PowerCinema, una tienda de alquiler de películas ubicada en una zona urbana, estás asumiendo tu papel como analista de datos. La tienda ofrece una amplia variedad de películas, desde clásicos del cine hasta lanzamientos más recientes, atrayendo a una clientela diversa.
+La gerencia de PowerCinema busca comprender mejor el comportamiento de sus clientes y optimizar la operación de la tienda. Quieren identificar qué películas son las más solicitadas por diferentes grupos de clientes, cómo varía el patrón de alquiler de películas a lo largo del tiempo y cómo se distribuyen los ingresos por concepto de alquileres entre los diversos géneros de películas.
+Para realizar análisis de manera efectiva, se utilizará la base de datos Sakila en PostgreSQL como el sistema de gestión de base de datos para realizar consultas significativas y extraer información clave. La gerencia espera que puedas descubrir tendencias, patrones de comportamiento y áreas de oportunidad que puedan utilizarse para mejorar la experiencia del cliente y aumentar la rentabilidad de la tienda.
+A lo largo de distintas sesiones iremos profundizando en el estudio de los datos de Sakila realizando consultas cada vez más complejas. En esta segunda sesión realizaremos consultas más avanzadas incluyendo las consultas de agregación, además crearemos consultas que nos devuelvan resultados ordenados.
+
+>>> Ejercicio <<<
+
+-3.1. Crea el esquema de la BBDD de sakila y ver relac ERD
+
+-3.2. Selecciona todos los nombres de las películas úncos
+
+SELECT DISTINCT("title") AS "titulo" -- que se lea como titulo
+FROM "film"
+
+-3.3. Crea una columna con el nombre y apellidos de todos los actores y actrices.
+
+SELECT DISTINCT(CONCAT("first_name", ' ' , "last_name")) AS "nombre_completo"
+FROM "actor"
+
+-3.4. Muestra los nombres de todas las películas con una clasificación por edades de "R".
+
+SELECT "title" AS "titulo",
+		"rating" AS "clasificacion"
+FROM "film"
+WHERE "rating" = 'R'
+
+-3.5. Obtén las películas que tenemos cuyo idioma conicide con el idioma original.
+
+SELECT "title" AS "titulo"
+FROM "film"
+WHERE "language_id" = "original_language_id"
+
+=> ninguno coincide, porque language_id todo = 1 y original_language_id = null
+
+-3.6. Encuentra el nombre y apellido de los actores que tengan "Allen" en su apellido.
+
+SELECT CONCAT("first_name", ' ' , "last_name") AS "nombre_completo"
+FROM "actor"
+WHERE "last_name" = 'Allen'
+
+=> no hay ninguno, pero en mayuscula si pq la crearon así
+
+SELECT CONCAT("first_name", ' ' , "last_name") AS "nombre_completo"
+FROM "actor"
+WHERE "last_name" = 'ALLEN'
+
+-3.7. Encuentra el título de todas las películas que tengan una duración mayor a 180 minutos.
+
+SELECT "title" AS "titulo",
+		"length" AS "duracion"
+FROM "film"
+WHERE "length" >= 180
+
+-3.8. Encuentra los nombres de los actores que tengan un actor id entre 30 y 40.
+
+SELECT DISTINCT(CONCAT("first_name", ' ' , "last_name")) AS "nombre_completo",
+		"actor_id"
+FROM "actor"
+WHERE "actor_id" BETWEEN 30 AND 40
+
+=> o también mayor y menor que
+
+-3.9. Encuentra el título de las películas en la tabla film que no sean ni "NC-17" ni "G" en cuanto a su clasificación.
+
+SELECT "title" AS "titulo",
+		"rating" AS "clasificacion"
+FROM "film"
+WHERE NOT "rating" = 'NC-17' 
+AND NOT "rating" = 'G';
+
+Ó
+
+SELECT "title" AS "titulo",
+		"rating" AS "clasificacion"
+FROM "film"
+WHERE "rating" <> 'NC-17' 
+AND "rating" <> 'G';
+
+-3.10. Encuentra el titulo de todas las películas que son "PG-13" o tienen una duración mayor a 3 horas en la tabla film.
+
+SELECT "title" AS "titulo",
+		"rating" AS "clasificacion",
+		"length" AS "duracion"
+FROM "film"
+WHERE "rating" = 'PG-13' 
+OR "length" > '180';
+
+=> da PG-13 menor a 180 min y otras clasif > 180 min.
+
+-3.11. Encuentra la mayor y menor duración de una pelicula de nuestra BBDD
+
+SELECT MAX("length") AS "mayor_duracion",
+		MIN("length") AS "menor_duracion"
+FROM "film"
+
+-3.12. ¿Cuántas peliculas distintas tenemos?
+
+SELECT COUNT("film_id") AS "Recuento"
+FROM "film"
+
+-3.13. ¿Cuánto dinero ha generado en total la empresa?
+
+SELECT SUM("amount") AS "ganancia"
+FROM "payment"
+
+-3.14. ¿Cuál es la media de duración del alquiler de las películas?
+
+SELECT ROUND(AVG("rental_duration"),0) AS "prom_alq"
+FROM "film"
+
+-3.15. Encuentra la variabilidad de los que costaría reemplazar las películas.
+
+SELECT ROUND(STDDEV_POP("replacement_cost"),2) AS "costo_reemplazo"
+FROM "film"
+
+Ó
+
+SELECT ROUND(STDDEV_SAMP("replacement_cost"),2) AS "costo_reemplazo"
+FROM "film"

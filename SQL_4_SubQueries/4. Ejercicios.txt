@@ -1,0 +1,151 @@
+>> 4. Ejercicios
+
+4.1. Hay algún actor o actriz que no apareca en ninguna película en la tabla film_actor.
+
+SELECT CONCAT("actor"."first_name",' ', "actor"."last_name") AS "actor"
+FROM "actor"
+WHERE "actor"."actor_id" NOT IN (
+		SELECT "film_actor"."actor_id"
+		FROM "film_actor");
+
+Ó con alias en trablas para que sea más rápida
+
+SELECT CONCAT("a"."first_name",' ', "a"."last_name") AS "Actor"
+FROM "actor" AS "a"
+WHERE "a"."actor_id" NOT IN (
+		SELECT "fa"."actor_id"
+		FROM "film_actor" AS "fa");
+
+=> result, implica que todos los actores tienen peli
+
+Ó mas simple
+
+SELECT CONCAT("a"."first_name",' ', "a"."last_name") AS "Actor"
+FROM "actor" AS "a"
+WHERE "a"."actor_id" IS NULL
+
+=> así no pq no consulta en film_actor
+
+4.2. Qué películas se alquilan por encima del precio medio. (Este ejercicio ya lo resolvimos en el segundo reto guiado de SQL)
+
+SELECT "title", "rental_rate"
+FROM "film"
+WHERE "rental_rate" > (
+		SELECT ROUND(AVG ("rental_rate"),2)
+		FROM "film");
+
+4.3. Encuentra los nombres de las películas que tienen la misma duración que la película con el título "Dancing Fever" Ordena los resultados alfabéticamente por título de película.
+
+4.4. Encuentra los nombres de los dientes que han alquilado al menos 7 películas distintas. Ordena los resultados alfabéticamente por apellido.
+
+SELECT CONCAT("c"."first_name",' ', "c"."last_name") AS "Cliente"
+FROM "customer" AS "c"
+WHERE "c"."customer_id" IN (
+	SELECT "r"."customer_id"
+	FROM "rental" AS "r"
+	GROUP BY "r"."customer_id"
+	HAVING COUNT(DISTINCT "r"."inventory_id") > 7)
+ORDER BY "c"."last_name";
+
+4.5. Encuentra el nombre y apellido de los actores que aparecen en la película con título"Egg Igby".
+
+4.6. Encuentra el titulo de todas las películas que son de la misma categoría que "Animation".
+
+SELECT "f"."title" AS "Título"
+FROM "film" AS "f"
+WHERE "f"."film_id" IN (
+	SELECT "fc"."film_id"
+	FROM "film_category" AS "fc"
+	WHERE "fc"."category_id" IN (
+		SELECT "c"."category_id"
+		FROM "category" AS "c"
+		WHERE "c"."name" = 'Animation'));
+
+4.7. Encuentra el título de todas las películas que fueron alquiladas por más de 8 días.
+
+SELECT "f"."title" AS "Título", "f"."film_id"
+FROM "film" AS "f"
+WHERE "f"."film_id" IN (
+	SELECT "i"."film_id"
+	FROM "inventory" AS "i"
+	WHERE "i"."inventory_id" IN (
+		SELECT "r"."inventory_id"
+		FROM "rental" AS "r"
+		WHERE DATE_PART ('day', "r"."return_date" - "r"."rental_date")>8
+	))
+ORDER BY "f"."film_id"
+
+4.8. Encuentra el nombre y apellido de los actores que no han actuado en ninguna película de la categoría "Music".
+
+4.9. Encuentra el título de las películas que han sido alquiladas por el cliente con el nombre "Tammy Sanders" y que aún no se han devuelto. Ordena los resultados alfabéticamente por título de película.
+
+SELECT "f"."title" AS "Título"
+FROM "film" AS "f"
+WHERE "f"."film_id" IN (
+	SELECT "i"."film_id"
+	FROM "inventory" AS "i"
+	WHERE "i"."inventory_id" IN (
+		SELECT "r"."inventory_id"
+		FROM "rental" AS "r"
+		WHERE "r"."customer_id" IN (
+			SELECT "c"."customer_id"
+			FROM "customer" AS "c"
+			WHERE "c"."first_name" = 'TAMMY' AND "c"."last_name" = 'SANDERS')
+		AND "r"."return_date" IS NULL))
+ORDER BY "f"."title"
+
+4.10. Encuentra los nombres de los actores que han actuado en al menos una película que pertenece a la categoría "Sci-Fi." Ordena los resultados alfabéticamente por apellido.
+
+SELECT CONCAT("a"."first_name",' ', "a"."last_name") AS "Nombre"
+FROM "actor" AS "a"
+WHERE "a"."actor_id" IN (
+		SELECT "fa"."actor_id"
+		FROM "film_actor" AS "fa"
+		WHERE "fa"."film_id" IN(
+			SELECT "fc"."film_id"
+			FROM "film_category" AS "fc"
+			WHERE "fc"."category_id" IN (
+				SELECT "c"."category_id"
+				FROM "category" AS "c"
+				WHERE "c"."name" = 'Sci-Fi')))
+ORDER BY "a"."last_name"
+
+4.11. Encuentra la cantidad total de películas alquiladas por categoría y muestra el nombre de la categoría junto con el recuento de alquileres.
+
+SELECT "c"."name" AS "Categoría",
+	COUNT("fc"."film_id") AS "Recuento"
+FROM "category" AS "c"
+INNER JOIN "film_category" AS "fc"
+ON  "c"."category_id" = "fc"."category_id"
+WHERE "fc"."film_id" IN (
+	SELECT "i"."film_id"
+	FROM "inventory" AS "i"
+	WHERE "i"."inventory_id" IN (
+		SELECT "r"."inventory_id"
+		FROM "rental" AS "r"))
+GROUP BY "c"."name"
+
+4.12. Encuentra el nombre y apellido de los actores que han actuado en películas que se alquilaron después de que la película "Spartacus Cheaper" se alquilara por primera vez. Ordena los resultados alfabéticamente por apellido.
+
+SELECT CONCAT("a". "first_name",' ', "a"."last_name") AS "Nombre" 
+FROM "actor" AS "a"
+WHERE "a"."actor_id" IN (
+	SELECT "fa"."actor_id" 
+	FROM "film_actor" AS "fa" 
+	WHERE "fa"."film_id" IN (
+		SELECT "i"."film_id"
+		FROM "inventory" AS "i" 
+		WHERE "i"."inventory_id" IN (
+			SELECT "r"."inventory_id"
+			FROM "rental" AS "r"
+			WHERE "r"."inventory_id" IN (
+				SELECT "i"."inventory_id" 
+				-- prueba
+				FROM "inventory" AS "i"
+				WHERE "i"."film_id" IN (
+					SELECT "f"."film_id"
+					FROM "film" AS "f"
+					WHERE "f"."title" = 'SPARTACUS CHEAPER'))
+			ORDER BY "r"."rental_date"
+			LIMIT 1)))
+ORDER BY "a"."last_name"

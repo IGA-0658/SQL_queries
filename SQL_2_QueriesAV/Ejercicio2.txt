@@ -1,0 +1,117 @@
+1.2. Propósito del reto.
+
+En PowerCinema, una tienda de alquiler de películas ubicada en una zona urbana, estás asumiendo tu papel como analista de datos. La tienda ofrece una amplia variedad de películas, desde clásicos del cine hasta lanzamientos más recientes, atrayendo a una clientela diversa.
+La gerencia de PowerCinema busca comprender mejor el comportamiento de sus clientes y optimizar la operación de la tienda. Quieren identificar qué películas son las más solicitadas por diferentes grupos de clientes, cómo varía el patrón de alquiler de películas a lo largo del tiempo y cómo se distribuyen los ingresos por concepto de alquileres entre los diversos géneros de películas.
+Para realizar análisis de manera efectiva, se utilizará la base de datos Sakila en PostgreSQL como el sistema de gestión de base de datos para realizar consultas significativas y extraer información clave. La gerencia espera que puedas descubrir tendencias, patrones de comportamiento y áreas de oportunidad que puedan utilizarse para mejorar la experiencia del cliente y aumentar la rentabilidad de la tienda.
+A lo largo de distintas sesiones iremos profundizando en el estudio de los datos de Sakila realizando consultas cada vez más complejas. En esta segunda sesión realizaremos consultas más avanzadas incluyendo las consultas de agregación, además crearemos consultas que nos devuelvan resultados ordenados.
+
+>>>2. Ejercicios
+
+2.1. Ordena las películas por duración de forma ascendente
+
+SELECT "title" AS "Peliculas",
+		"length" AS "Duracion"
+FROM "film"
+ORDER BY "length" ASC
+
+(no hace falta poner el alias ni el ASC ya que por defecto lo hace)
+
+2.2. Muestra los 10 clientes con mayor valor de id
+
+SELECT CONCAT("first_name", ' ' , "last_name") AS "Cliente",
+		"customer_id" AS "id"
+FROM "customer"
+ORDER BY "customer_id" DESC
+LIMIT 10
+
+2.3. Encuentra lo que costó el antepenúltimo alquiler ordenado por día.
+
+SELECT "amount" AS "Costo"
+FROM "payment"
+ORDER BY "payment_date" DESC
+OFFSET 3
+LIMIT 1
+
+2.4. Qué películas se alquilan por encima del precio medio. Para este ejercicio tendrás que generar dos queries diferentes. Una primera para calcular la media y la segunda para obtener las películas que se alquilan por encima de ese valor. 
+
+SELECT ROUND(AVG ("rental_rate"),2) AS "precio_medio"
+FROM "film"
+
+--
+
+SELECT "title" AS "titulo",
+		"rental_rate" AS "precio_alquiler"
+FROM "film"
+WHERE "rental_rate" > 2.98
+
+--
+
+SELECT "title" AS "titulo",
+		"rental_rate" AS "precio_alquiler"
+FROM "film"
+WHERE "rental_rate" > 2.98
+ORDER BY rental_rate ASC
+
+(ordeno asc para comprobar)
+
+2.5. Encuentra la cantidad total de películas en cada clasificación de la tabla film y muestra la clasificación junto con el recuento.
+
+SELECT COUNT(DISTINCT("title")) AS "titulos_clasif",
+		"rating" AS "clasificacion"
+FROM "film"
+GROUP BY "rating" 
+
+2.6. Encuentra el promedio de duración de las películas para cada clasificación de la tabla film y muestra la clasificación junto con el promedio de duración.
+
+SELECT "rating" AS "clasificaciones",
+		ROUND(AVG("length"),0) AS "Media_duracion"
+FROM "film"
+GROUP BY "rating" 
+
+-- 
+
+SELECT "rating" AS "clasificaciones",
+		ROUND(AVG("length"),0) AS "Media_duracion"
+FROM "film"
+GROUP BY "rating" 
+ORDER BY "Media_duracion" ASC
+
+2.7. Números de alquiler por día. Ordenados por cantidad de alquiler de forma descendente.
+
+SELECT COUNT("rental_id") AS "alquileres",
+		DATE("rental_date") AS "dia_alquiler"
+FROM "rental"
+GROUP BY "dia_alquiler"
+
+--
+
+SELECT COUNT("rental_id") AS "alquileres",
+		DATE("rental_date") AS "dia_alquiler"
+FROM "rental"
+GROUP BY "dia_alquiler"
+ORDER BY "alquileres" DESC
+
+2.8. Averigua el número de alquileres registrados por mes.
+
+SELECT COUNT("rental_id") AS "alquileres",
+		EXTRACT(MONTH FROM("rental_date")) AS "mes_alquiler"
+FROM "rental"
+GROUP BY "mes_alquiler"
+ORDER BY "alquileres""
+
+2.9. Número de películas por categoría estrenadas en 2006
+
+SELECT COUNT(DISTINCT("title")) AS "peliculas_2006",
+		"rating" AS "clasificiacion"
+FROM "film"
+WHERE "release_year" = 2006
+GROUP BY "rating"
+
+2.10. Muestra el id de los actores que hayan participado en más de 40 películas.
+
+SELECT "actor_id",
+		COUNT(DISTINCT("film_id")) AS "num_peliculas"
+FROM "film_actor"
+GROUP BY "actor_id"
+HAVING COUNT(DISTINCT("film_id")) > 40
+
